@@ -1,0 +1,1 @@
+console.log("East Texas Hot Tub MCP system initialized"); 

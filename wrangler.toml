@@ -1,0 +1,11 @@
+name = "east-texas-hot-tub"
+main = "src/index.ts"
+compatibility_date = "2023-09-04"
+
+[vars]
+# Environment variables will be populated from .env file
+
+[[kv_namespaces]]
+binding = "MCP_STORE"
+id = "placeholder"
+preview_id = "placeholder" 
