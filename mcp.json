@@ -1,15 +1,16 @@
 {
   "mcpServers": {
-    "SlackMCP": {
-      "url": "https://mcp.composio.dev/composio/server/4f3e4bfe-a0b2-4c4d-9ffc-ade7a2c091be"
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest"
+      ],
+      "env": {
+        "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yamNnanF3emptdWZmc3FxcnJiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjQ2ODU5NywiZXhwIjoyMDYyMDQ0NTk3fQ.XSFYrtRIvJ5mwcH3v743WWF0j2usw5CBOmKOlYeksJA",
+        "SUPABASE_URL": "https://nrjcgjqwzmuffsqqrrb.supabase.co"
+      }
     }
-    https://mcp.composio.dev/composio/server/907e3e2f-e138-4bca-8134-4d4a7d6ea2e8
-
-{
-  "mcpServers": {
-    "SupabaseMCP": {
-      "url": "https://mcp.composio.dev/composio/server/563d08e9-a1c2-42e0-8bf1-59c6d40a9dd1
-
-
-
   }
+}
+
