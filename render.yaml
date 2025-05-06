@@ -2,7 +2,7 @@ services:
   - type: web
     name: etht-slack-bot
     env: node
-    buildCommand: chmod +x ./build.sh && ./build.sh
+    buildCommand: npm install && npm run build
     startCommand: npm start
     region: ohio
     plan: free
