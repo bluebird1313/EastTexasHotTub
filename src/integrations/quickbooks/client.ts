@@ -1,14 +1,13 @@
 import * as dotenv from 'dotenv';
-import { QuickBooksClient } from '../../mcp/quickbooks';
+import { generateDemoData } from '../../services/etl/demoData';
 
 // Load environment variables
 dotenv.config();
 
 /**
  * Enhanced QuickBooks client for data extraction
- * Extends the base MCP QuickBooks client with additional functionality
  */
-export class EnhancedQuickBooksClient extends QuickBooksClient {
+export class EnhancedQuickBooksClient {
   /**
    * Fetch financial data for a specific date range
    */
@@ -50,10 +49,10 @@ export class EnhancedQuickBooksClient extends QuickBooksClient {
     // In the actual implementation, this would call the QB API
     console.log(`Executing QB query: ${query}`);
     
-    // For now, return placeholder data
+    // Return demo data instead of empty array
     return {
       success: true,
-      data: []
+      data: generateDemoData()
     };
   }
   

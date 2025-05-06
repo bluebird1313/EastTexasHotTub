@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { EnhancedQuickBooksClient } from '../../integrations/quickbooks/client';
 import { EnhancedSupabaseClient } from '../../integrations/supabase/client';
+import { generateDemoData } from './demoData';
 
 // Load environment variables
 dotenv.config();
@@ -9,12 +10,27 @@ dotenv.config();
  * ETL service to sync data between QuickBooks and Supabase
  */
 export class SyncService {
-  private qbClient: EnhancedQuickBooksClient;
+  private qbClient: EnhancedQuickBooksClient | null = null;
   private supabaseClient: EnhancedSupabaseClient;
+  private useDemoData: boolean = false;
   
   constructor() {
-    this.qbClient = new EnhancedQuickBooksClient();
+    // Set up Supabase client
     this.supabaseClient = new EnhancedSupabaseClient();
+    
+    // Check if we have QuickBooks credentials
+    if (!process.env.QBO_CLIENT_ID || !process.env.QBO_CLIENT_SECRET || !process.env.REALMID) {
+      console.warn('QuickBooks credentials not found in environment. Using demo data instead.');
+      this.useDemoData = true;
+    } else {
+      try {
+        this.qbClient = new EnhancedQuickBooksClient();
+      } catch (error) {
+        console.error('Failed to initialize QuickBooks client:', error);
+        console.warn('Falling back to demo data');
+        this.useDemoData = true;
+      }
+    }
   }
   
   /**
@@ -49,8 +65,18 @@ export class SyncService {
     try {
       console.log(`Syncing financial data from ${startDate} to ${endDate}`);
       
-      // Fetch data from QuickBooks
-      const financialData = await this.qbClient.fetchFinancialData(startDate, endDate);
+      let financialData;
+      
+      // Use demo data or fetch from QuickBooks
+      if (this.useDemoData) {
+        console.log('Using demo data for financial sync');
+        financialData = { data: generateDemoData() };
+      } else if (this.qbClient) {
+        // Fetch data from QuickBooks
+        financialData = await this.qbClient.fetchFinancialData(startDate, endDate);
+      } else {
+        throw new Error('No data source available');
+      }
       
       // Transform the data for Supabase
       const transformedData = this.transformFinancialData(financialData);
@@ -81,13 +107,15 @@ export class SyncService {
     }
     
     return data.data.map((item: any) => ({
-      qb_id: item.Id || `qb-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      date: item.TxnDate,
-      document_number: item.DocNumber,
-      description: item.Description,
-      amount: item.Amount,
-      item_name: item.ItemName,
-      item_type: item.ItemType,
+      qb_id: item.Id || item.qb_id || `qb-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      date: item.TxnDate || item.date,
+      document_number: item.DocNumber || item.document_number,
+      description: item.Description || item.description,
+      amount: item.Amount || item.amount,
+      cost: item.Cost || item.cost || null,
+      price: item.Price || item.price || item.Amount || item.amount,
+      item_name: item.ItemName || item.item_name,
+      item_type: item.ItemType || item.item_type,
       // Add other fields as needed
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()

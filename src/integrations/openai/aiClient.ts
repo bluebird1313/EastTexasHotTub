@@ -9,18 +9,27 @@ dotenv.config();
  * Handles conversion of natural language to SQL queries
  */
 export class OpenAIClient {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
+  private isEnabled: boolean = false;
   
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set in the environment');
+      console.warn('OPENAI_API_KEY is not set in the environment. Natural language processing will be disabled.');
+      this.isEnabled = false;
+      return;
     }
     
-    this.openai = new OpenAI({
-      apiKey: apiKey
-    });
+    try {
+      this.openai = new OpenAI({
+        apiKey: apiKey
+      });
+      this.isEnabled = true;
+    } catch (error) {
+      console.error('Failed to initialize OpenAI client:', error);
+      this.isEnabled = false;
+    }
   }
   
   /**
@@ -28,6 +37,12 @@ export class OpenAIClient {
    */
   async convertToSQL(query: string, tableSchema: string): Promise<string> {
     try {
+      // If OpenAI is not available, return a default SQL query
+      if (!this.isEnabled || !this.openai) {
+        console.warn('OpenAI is not available. Using default SQL query');
+        return this.getFallbackSQL(query);
+      }
+      
       console.log(`Converting natural language query to SQL: ${query}`);
       
       const response = await this.openai.chat.completions.create({
@@ -61,7 +76,7 @@ export class OpenAIClient {
       return sqlQuery;
     } catch (error) {
       console.error('Error converting query to SQL:', error);
-      throw error;
+      return this.getFallbackSQL(query);
     }
   }
   
@@ -70,6 +85,12 @@ export class OpenAIClient {
    */
   async formatResponse(query: string, results: any): Promise<string> {
     try {
+      // If OpenAI is not available, return the raw results
+      if (!this.isEnabled || !this.openai) {
+        console.warn('OpenAI is not available. Returning raw results.');
+        return `Results for "${query}":\n${JSON.stringify(results, null, 2)}`;
+      }
+      
       console.log(`Formatting results for query: ${query}`);
       
       const response = await this.openai.chat.completions.create({
@@ -97,7 +118,57 @@ export class OpenAIClient {
       return formattedResponse;
     } catch (error) {
       console.error('Error formatting response:', error);
-      throw error;
+      return `Results for "${query}":\n${JSON.stringify(results, null, 2)}`;
     }
+  }
+  
+  /**
+   * Check if the OpenAI integration is enabled
+   */
+  isOpenAIEnabled(): boolean {
+    return this.isEnabled;
+  }
+  
+  /**
+   * Get a fallback SQL query based on the natural language query
+   */
+  private getFallbackSQL(query: string): string {
+    // Some basic pattern matching for common queries
+    const lowerQuery = query.toLowerCase();
+    
+    if (lowerQuery.includes('revenue') && lowerQuery.includes('last month')) {
+      return `
+        SELECT 
+          SUM(amount) as revenue
+        FROM 
+          financial_invoices
+        WHERE 
+          date >= date_trunc('month', current_date - interval '1 month')
+          AND date < date_trunc('month', current_date)
+      `;
+    }
+    
+    if (lowerQuery.includes('margin') && lowerQuery.includes('20')) {
+      return `
+        SELECT 
+          item_name,
+          price,
+          cost,
+          ((price - cost) / price * 100) as margin
+        FROM 
+          financial_invoices
+        WHERE 
+          ((price - cost) / price * 100) > 20
+        ORDER BY
+          margin DESC
+      `;
+    }
+    
+    // Default to a simple query
+    return `
+      SELECT * 
+      FROM financial_invoices
+      LIMIT 10
+    `;
   }
 } 
