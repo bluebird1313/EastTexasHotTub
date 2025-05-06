@@ -26,6 +26,10 @@ STRIPE_SECRET_KEY=
 STRIPE_PRICE_ID=
 SLACK_BOT_TOKEN=
 SLACK_SIGNING_SECRET=
+GOOGLE_SHEETS_API_KEY=
+GOOGLE_SHEETS_CLIENT_EMAIL=
+GOOGLE_SHEETS_PRIVATE_KEY=
+GOOGLE_SHEETS_REPORT_ID=
 ```
 
 ## Project Structure
@@ -41,9 +45,11 @@ SLACK_SIGNING_SECRET=
     quickbooks/         # Enhanced QuickBooks client
     supabase/           # Enhanced Supabase client
     slack/              # Slack bot integration
+    google/             # Google Sheets integration
   services/
     etl/                # Data transfer services
     ai-query/           # Natural language query processing
+    reporting/          # Financial reporting services
 /supabase/
   schema.sql            # Database schema
   migrations/           # Database migrations
@@ -72,5 +78,27 @@ Ask questions about your business performance directly in Slack:
 - "Show me YTD expenses by category"
 
 See [AI Financial Analytics Documentation](./docs/README-ai-analytics.md) for details.
+
+### Google Sheets Integration
+
+In addition to Slack summaries, full financial reports (like invoices or expense logs) can be exported to Google Sheets.
+
+The system:
+- Uses an MCP tool to query Supabase
+- Pushes results to a connected Google Sheet
+- Sends a Slack message with a link to the sheet
+
+Required environment variables:
+- `GOOGLE_SHEETS_API_KEY`: API key for Google Sheets access
+- `GOOGLE_SHEETS_CLIENT_EMAIL`: Service account email
+- `GOOGLE_SHEETS_PRIVATE_KEY`: Service account private key
+- `GOOGLE_SHEETS_REPORT_ID`: ID of the target spreadsheet
+
+To generate a report:
+```
+npm run report -- --type=monthly-revenue --month=current
+```
+
+Reports are automatically generated on the first of each month using a scheduled Supabase Edge Function.
 
 More detailed instructions will be added as the project develops. 

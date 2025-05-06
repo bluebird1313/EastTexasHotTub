@@ -54,6 +54,13 @@ export class EnhancedSupabaseClient extends SupabaseSync {
    */
   async executeNLQuery(query: string): Promise<any> {
     try {
+      // Check if this is a direct SQL execution request
+      if (query.startsWith('EXECUTE SQL:')) {
+        // Extract the SQL query
+        const sqlQuery = query.replace('EXECUTE SQL:', '').trim();
+        return this.executeDirectSQL(sqlQuery);
+      }
+      
       // This would use SQL or a custom function to query the data
       // For now, just returning placeholder data
       console.log(`Executing natural language query: ${query}`);
@@ -62,6 +69,20 @@ export class EnhancedSupabaseClient extends SupabaseSync {
       const sqlQuery = await this.convertNLToSQL(query);
       
       // Execute the SQL query
+      return this.executeDirectSQL(sqlQuery);
+    } catch (error) {
+      console.error('Failed to execute query:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Execute a direct SQL query against Supabase
+   * Private method for internal use
+   */
+  private async executeDirectSQL(sqlQuery: string): Promise<any> {
+    try {
+      // Execute the SQL query using Supabase RPC
       const { data, error } = await this.supabaseClient.rpc('execute_query', {
         sql_query: sqlQuery
       });
@@ -72,7 +93,7 @@ export class EnhancedSupabaseClient extends SupabaseSync {
       
       return data;
     } catch (error) {
-      console.error('Failed to execute query:', error);
+      console.error('Failed to execute SQL query:', error);
       throw error;
     }
   }

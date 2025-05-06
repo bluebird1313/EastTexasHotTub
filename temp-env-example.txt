@@ -18,4 +18,10 @@ STRIPE_PRICE_ID=your_stripe_price_id
 
 # Slack Configuration
 SLACK_BOT_TOKEN=your_slack_bot_token
-SLACK_SIGNING_SECRET=your_slack_signing_secret 
+SLACK_SIGNING_SECRET=your_slack_signing_secret
+
+# Google Sheets Configuration
+GOOGLE_SHEETS_API_KEY=your_google_sheets_api_key
+GOOGLE_SHEETS_CLIENT_EMAIL=your_service_account_email
+GOOGLE_SHEETS_PRIVATE_KEY=your_service_account_private_key
+GOOGLE_SHEETS_REPORT_ID=your_target_spreadsheet_id 
