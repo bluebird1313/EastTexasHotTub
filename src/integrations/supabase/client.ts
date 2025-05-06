@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { SupabaseSync } from '../../mcp/supabaseSync';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { OpenAIClient } from '../openai/aiClient';
 
 // Load environment variables
 dotenv.config();
@@ -11,6 +12,8 @@ dotenv.config();
  */
 export class EnhancedSupabaseClient extends SupabaseSync {
   private supabaseClient: SupabaseClient;
+  private openaiClient: OpenAIClient;
+  private tableSchema: string;
   
   constructor() {
     super();
@@ -22,6 +25,25 @@ export class EnhancedSupabaseClient extends SupabaseSync {
     }
     
     this.supabaseClient = createClient(supabaseUrl, supabaseKey);
+    this.openaiClient = new OpenAIClient();
+    
+    // Define the financial_invoices table schema for SQL generation
+    this.tableSchema = `
+    CREATE TABLE financial_invoices (
+      id BIGSERIAL PRIMARY KEY,
+      qb_id TEXT UNIQUE NOT NULL,
+      date DATE NOT NULL,
+      document_number TEXT,
+      description TEXT,
+      amount DECIMAL(10, 2) NOT NULL,
+      cost DECIMAL(10, 2), -- Cost of goods/services
+      price DECIMAL(10, 2), -- Selling price
+      item_name TEXT,
+      item_type TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    `;
   }
   
   /**
@@ -61,15 +83,22 @@ export class EnhancedSupabaseClient extends SupabaseSync {
         return this.executeDirectSQL(sqlQuery);
       }
       
-      // This would use SQL or a custom function to query the data
-      // For now, just returning placeholder data
       console.log(`Executing natural language query: ${query}`);
       
-      // Convert natural language to SQL using AI
-      const sqlQuery = await this.convertNLToSQL(query);
+      // Convert natural language to SQL using OpenAI
+      const sqlQuery = await this.openaiClient.convertToSQL(query, this.tableSchema);
       
       // Execute the SQL query
-      return this.executeDirectSQL(sqlQuery);
+      const results = await this.executeDirectSQL(sqlQuery);
+      
+      // Format results using OpenAI
+      const formattedResponse = await this.openaiClient.formatResponse(query, results);
+      
+      // Return both the raw results and the formatted response
+      return {
+        rawResults: results,
+        formattedResponse: formattedResponse
+      };
     } catch (error) {
       console.error('Failed to execute query:', error);
       throw error;
@@ -96,32 +125,5 @@ export class EnhancedSupabaseClient extends SupabaseSync {
       console.error('Failed to execute SQL query:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Convert natural language to SQL using an AI service
-   * This would be implemented to use an AI service
-   */
-  private async convertNLToSQL(query: string): Promise<string> {
-    // Placeholder for AI conversion logic
-    // In reality, this would call an AI service or use embeddings
-    
-    // For demonstration purposes, map common queries to SQL
-    if (query.includes('revenue for hot tubs') && query.includes('last month')) {
-      return `
-        SELECT SUM(amount) as revenue
-        FROM financial_invoices
-        WHERE item_type = 'Hot Tub' 
-        AND date >= date_trunc('month', current_date - interval '1 month')
-        AND date < date_trunc('month', current_date)
-      `;
-    }
-    
-    // Default query
-    return `
-      SELECT * 
-      FROM financial_invoices
-      LIMIT 10
-    `;
   }
 } 
