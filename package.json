@@ -2,15 +2,13 @@
   "name": "east-texas-hot-tub",
   "version": "1.0.0",
   "description": "East Texas Hot Tub financial analytics system",
-  "main": "src/server-simple.ts",
+  "main": "src/server-fixed.ts",
   "scripts": {
-    "start": "node dist/server-simple.js",
+    "start": "node dist/server-fixed.js",
     "dev": "ts-node src/index.ts",
     "sync": "ts-node src/index.ts sync",
     "query": "ts-node src/index.ts query",
     "slack": "ts-node src/index.ts slack",
-    "server": "ts-node src/server.ts",
-    "simple-server": "ts-node src/server-simple.ts",
     "build": "tsc -p tsconfig.json",
     "postinstall": "npm run build"
   },
