@@ -7,6 +7,7 @@ This repository contains the Management Control Panel (MCP) system for East Texa
 - **main**: Production-ready code
 - **develop**: Integration branch for tested features
 - **feature/mcp-setup**: MCP automation and connection setup
+- **feature/qb-supabase-ai-integration**: QuickBooks to Supabase integration with AI-powered analysis
 
 ## Environment Configuration
 
@@ -23,6 +24,8 @@ QBO_REDIRECT=http://localhost:8787/callback
 REALMID=
 STRIPE_SECRET_KEY=
 STRIPE_PRICE_ID=
+SLACK_BOT_TOKEN=
+SLACK_SIGNING_SECRET=
 ```
 
 ## Project Structure
@@ -34,10 +37,21 @@ STRIPE_PRICE_ID=
     quickbooks.ts       # QuickBooks integration
     supabaseSync.ts     # Supabase synchronization
     composioClient.ts   # Composio API client
+  integrations/
+    quickbooks/         # Enhanced QuickBooks client
+    supabase/           # Enhanced Supabase client
+    slack/              # Slack bot integration
+  services/
+    etl/                # Data transfer services
+    ai-query/           # Natural language query processing
 /supabase/
   schema.sql            # Database schema
-  functions/
+  migrations/           # Database migrations
+  functions/            # Edge functions
     qbo_sync.ts         # Edge function for QuickBooks sync
+    slack-webhook/      # Slack webhook handler
+/docs/
+  README-ai-analytics.md # AI Analytics documentation
 /.cursor/mcps/          # Cursor MCP configuration
 wrangler.toml           # Cloudflare Workers configuration
 ```
@@ -46,7 +60,17 @@ wrangler.toml           # Cloudflare Workers configuration
 
 1. Clone the repository
 2. Create a `.env` file with your configuration values
-3. Install dependencies
-4. Run the development server
+3. Install dependencies: `npm install`
+4. Run the development server: `npm run dev`
+
+## Features
+
+### Financial Analytics via Slack
+
+Ask questions about your business performance directly in Slack:
+- "What was the revenue for hot tubs last month?"
+- "Show me YTD expenses by category"
+
+See [AI Financial Analytics Documentation](./docs/README-ai-analytics.md) for details.
 
 More detailed instructions will be added as the project develops. 

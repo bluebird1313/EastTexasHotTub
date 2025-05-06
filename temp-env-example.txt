@@ -14,4 +14,8 @@ COMPOSIO_API_KEY=your_composio_api_key
 
 # Stripe (if needed)
 STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_PRICE_ID=your_stripe_price_id 
+STRIPE_PRICE_ID=your_stripe_price_id
+
+# Slack Configuration
+SLACK_BOT_TOKEN=your_slack_bot_token
+SLACK_SIGNING_SECRET=your_slack_signing_secret 
